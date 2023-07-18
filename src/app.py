@@ -42,12 +42,11 @@ def handle_user():
             "data": users
         }), 200
     elif request.method == 'POST':
-        print("Prueba2")
         user = User()
-        #data = request.json.get()
-        user.name = request.json.get("name")
-        user.username = request.json.get("username")
-        user.password = request.json.get("password")
+        data = request.get_json()
+        user.name = data["name"]
+        user.username = data["username"]
+        user.password = data["password"]
 
         db.session.add(user)
         db.session.commit()
@@ -56,9 +55,15 @@ def handle_user():
             "msg": "user created"
         }), 200
 
-@app.route("/user/<int:id>", methods=["PUT", "DELETE"])
+@app.route("/user/<int:id>", methods=["GET","PUT", "DELETE"])
 def update_user(id):
-    if request.method == 'PUT':
+    if request.method == 'GET':
+        user_id = id
+        user = User.query.get(id)
+        data = user.to_dict()
+
+        return data, 200
+    elif request.method == 'PUT':
         user = User.query.get(id)
         if user is not None:
             data = request.get_json()
@@ -187,28 +192,51 @@ def update_planet(id):
             }), 404
 
 @app.route('/user/<int:id>/favorite', methods=['GET'])
-def handle_favorite():
-    favorites = Favorite.query.all()
+def handle_favorite(id):
+    user_id = id
+    favorites = Favorite.query.filter_by(user_id=user_id)
     favorites = list(map(lambda favorite: favorite.to_dict(), favorites))
 
     return jsonify({
         "data": favorites
     }), 200
     
-@app.route('/user/<int:id>/favorite', methods=["POST"])
-def handle_favorite():
+@app.route('/favorite', methods=["POST"])
+def create_favorite():
     favorite = Favorite()
     data = request.get_json()
-    if 
-    favorite.user_id = data["name"]
+    user_id = data["user_id"]
+    character_id = data["character_id"]
+    #planet_id = data["planet_id"]
 
-    db.session.add(favorite)
-    db.session.commit()
+    user_filter = User.query.filter_by(id=user_id)
+    character_filter = Character.query.filter_by(id=character_id)
+    #planet_filter = Planet.query.filter_by(id=planet_id)
 
-    return jsonify({
+    if user_filter is not None and character_filter is not None:
+        favorite.user_id = data["user_id"]
+        favorite.user_character = data["character_id"]
+        db.session.add(favorite)
+        db.session.commit()
+
+        return jsonify({
         "msg": "favorite created"
-    }), 200
+        }), 200
 
+    #elif user_filter is not None and planet_filter is not None:
+        #favorite.user_id = data["user_id"]
+        #favorite.user_planet = data["planet_id"]
+        #db.session.add(favorite)
+        #db.session.commit()
+
+        #return jsonify({
+        #"msg": "favorite created"
+        #}), 200
+
+    else:
+        return jsonify({
+                "msg":"favorite could not be create, make sure user, character or planet exists"
+            }), 404
 
 if __name__ == "__main__":
     app.run(host="localhost", port=5000)
