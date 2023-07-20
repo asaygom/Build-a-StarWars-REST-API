@@ -14,7 +14,7 @@ from flask_migrate import Migrate
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///project.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -206,12 +206,17 @@ def create_favorite():
     favorite = Favorite()
     data = request.get_json()
     user_id = data["user_id"]
+    if data["character_id"] is None:
+        character_id = "0"
     character_id = data["character_id"]
-    #planet_id = data["planet_id"]
+    if data["planet_id"] is None:
+        planet_id = "0"
+    planet_id = data["planet_id"]
+    
 
     user_filter = User.query.filter_by(id=user_id)
     character_filter = Character.query.filter_by(id=character_id)
-    #planet_filter = Planet.query.filter_by(id=planet_id)
+    planet_filter = Planet.query.filter_by(id=planet_id)
 
     if user_filter is not None and character_filter is not None:
         favorite.user_id = data["user_id"]
@@ -223,15 +228,15 @@ def create_favorite():
         "msg": "favorite created"
         }), 200
 
-    #elif user_filter is not None and planet_filter is not None:
-        #favorite.user_id = data["user_id"]
-        #favorite.user_planet = data["planet_id"]
-        #db.session.add(favorite)
-        #db.session.commit()
+    elif user_filter is not None and planet_filter is not None:
+        favorite.user_id = data["user_id"]
+        favorite.user_planet = data["planet_id"]
+        db.session.add(favorite)
+        db.session.commit()
 
-        #return jsonify({
-        #"msg": "favorite created"
-        #}), 200
+        return jsonify({
+        "msg": "favorite created"
+        }), 200
 
     else:
         return jsonify({

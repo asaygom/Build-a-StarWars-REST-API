@@ -42,8 +42,8 @@ class Favorite(db.Model):
     __tablename__ = 'favorite'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user_character = db.Column(db.String, db.ForeignKey('character.id'))
-    user_planet = db.Column(db.String, db.ForeignKey('planet.id'))
+    user_character = db.Column(db.Integer, db.ForeignKey('character.id'), nullable=True)
+    user_planet = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=True)
     user = db.relationship(User)
 
     def to_dict(self):
